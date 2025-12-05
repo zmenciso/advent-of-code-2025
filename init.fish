@@ -2,6 +2,7 @@
 
 set template "use std::io;
 use std::error::Error;
+use aoc_$argv[1]::*;
 
 fn main() -> Result<(), Box<dyn Error>> {
     for line in io::stdin().lines() {
@@ -17,4 +18,6 @@ cd $dir
 
 cargo init
 echo $template >src/main.rs
-touch src/lib.rs
+echo 'use std::error::Error;' >src/lib.rs
+touch example.txt
+touch input.txt
