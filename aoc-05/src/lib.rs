@@ -2,7 +2,7 @@ use std::error::Error;
 
 pub const DELIM: char = '-';
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Range {
     pub min: usize,
     pub max: usize,
@@ -43,9 +43,57 @@ impl Ingredients {
     }
 
     pub fn add_range(&mut self, range: &str) -> Result<(), Box<dyn Error>> {
-        let range = Range::from_str(range)?;
-        self.ids.push(range);
+        let mut new = Range::from_str(range)?;
+        let mut dirty = true;
+
+        let mut i = 0usize;
+
+        while dirty {
+            dirty = false;
+
+            while i < self.ids.len() {
+                let inspect = self.ids[i];
+
+                let (clip_left, clip_right) =
+                    (inspect.includes(&new.min), inspect.includes(&new.max));
+                let subsume = new.includes(&inspect.min) && new.includes(&inspect.max);
+
+                // New Range is entirely in inspected Range, so we discard it
+                if clip_left && clip_right {
+                    return Ok(());
+                }
+
+                if clip_left {
+                    new = Range {
+                        min: inspect.min,
+                        max: new.max,
+                    };
+                } else if clip_right {
+                    new = Range {
+                        min: new.min,
+                        max: inspect.max,
+                    };
+                }
+
+                if clip_left || clip_right || subsume {
+                    dirty = true;
+                    self.ids.remove(i);
+                    break;
+                }
+
+                i += 1;
+            }
+        }
+
+        self.ids.push(new);
 
         Ok(())
+    }
+
+    pub fn total(&self) -> usize {
+        let mut count = 0usize;
+        self.ids.iter().for_each(|r| count += r.len());
+
+        count
     }
 }
