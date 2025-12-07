@@ -10,7 +10,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         problem.add_line(&line)?;
     }
 
-    println!("{}", problem.compute().iter().sum::<usize>());
+    // println!("{:?}", problem);
+    println!("{:?}", problem.compute().iter().sum::<usize>());
 
     Ok(())
 }
