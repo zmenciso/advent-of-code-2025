@@ -1,0 +1,8 @@
+[package]
+name = "aoc-08"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+derive_more = { version = "2.1.0", features = ["add_assign", "add", "mul", "mul_assign"] }
+ordered-float = "5.1.0"
