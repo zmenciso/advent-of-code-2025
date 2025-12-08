@@ -1,8 +1,11 @@
 use aoc_08::*;
 use ordered_float::OrderedFloat;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::error::Error;
 use std::io;
+
+const CONNECTIONS: usize = 1000;
+const MULT: usize = 3;
 
 fn combinations(coords: &Vec<Coord>) -> HashMap<Pair, Float> {
     let mut distances = HashMap::new();
@@ -22,27 +25,17 @@ fn combinations(coords: &Vec<Coord>) -> HashMap<Pair, Float> {
     distances
 }
 
-fn circuits(coords: &Vec<Coord>) -> Result<Option<Pair>, Box<dyn Error>> {
-    let distances = combinations(coords);
-    let mut unconnected: HashSet<&Coord> = coords.iter().collect();
+fn circuits(distances: &HashMap<Pair, Float>) -> Vec<usize> {
     let mut ds = DisjointSet::new();
 
     let mut v: Vec<(&Pair, &Float)> = distances.iter().collect();
     v.sort_by_key(|(_, dist)| OrderedFloat(**dist));
-    let mut iter = v.iter();
 
-    let mut last: Option<Pair> = None;
-
-    while unconnected.len() > 0 || ds.lengths().len() != 1 {
-        let ((junc_a, junc_b), _) = iter.next().ok_or("not enough possible connections")?;
-        last = Some((*junc_a, *junc_b));
-
+    for ((junc_a, junc_b), _) in v.iter().take(CONNECTIONS) {
         ds.add_pair(*junc_a, *junc_b);
-        unconnected.remove(junc_a);
-        unconnected.remove(junc_b);
     }
 
-    Ok(last)
+    ds.lengths()
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -53,13 +46,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         coords.push(Coord::from_str(line.trim())?);
     }
 
-    let last = circuits(&coords)?;
-    if let Some((a, b)) = last {
-        let product = a.x * b.x;
+    let distances = combinations(&coords);
+    let mut circuits = circuits(&distances);
+    circuits.sort();
+    circuits.reverse();
 
-        println!("{a} {b}");
-        println!("{product}");
-    }
+    let product: usize = circuits.iter().take(MULT).product();
+
+    println!("{:?}", circuits);
+    println!("{product}");
 
     Ok(())
 }
