@@ -1,17 +1,17 @@
 use derive_more::{Add, AddAssign, Sub, SubAssign};
-use std::collections::HashSet;
-use std::error::Error;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 
 const START: char = 'S';
 const SPLITTER: char = '^';
 const EMPTY: char = '.';
+#[allow(dead_code)]
 const BEAM: char = '|';
 
 const DOWN: Point = Point { x: 0, y: 1 };
 const RIGHT: Point = Point { x: 1, y: 0 };
 
-#[derive(Eq, Hash, PartialEq, Add, Sub, AddAssign, SubAssign, Copy, Clone)]
+#[derive(Eq, Hash, PartialEq, Add, Sub, AddAssign, SubAssign, Copy, Clone, Debug)]
 pub struct Point {
     pub x: isize,
     pub y: isize,
@@ -89,31 +89,35 @@ impl Manifold {
 
         self.depth += 1;
     }
+}
 
-    pub fn simulate(&mut self) -> usize {
-        let mut splits = 0usize;
+pub fn simulate(manifold: &Manifold, splits: &mut HashMap<Point, usize>, loc: Point) -> usize {
+    // Base case: Hit the bottom
+    if loc.y > manifold.depth {
+        return 1;
+    }
 
-        // Initial beam
-        self.beams.insert(self.start + DOWN);
-
-        // Collect all the points so we can mutate
-        let points: Vec<Point> = self.points().collect();
-
-        for p in points {
-            let above = p - DOWN;
-
-            // At a splitter, only do something if there is a beam above
-            if self.splitters.contains(&p) && self.beams.contains(&above) {
-                self.beams.insert(p + RIGHT);
-                self.beams.insert(p - RIGHT);
-                splits += 1;
-            }
-            // There is a beam above, but that's it
-            else if self.beams.contains(&above) {
-                self.beams.insert(p);
+    // Recursive case: hit a splitter
+    if manifold.splitters.contains(&loc) {
+        match splits.get(&loc) {
+            Some(val) => *val,
+            None => {
+                let left_branches = simulate(manifold, splits, loc - RIGHT);
+                let right_branches = simulate(manifold, splits, loc + RIGHT);
+                let branches = left_branches + right_branches;
+                splits.insert(loc, branches);
+                branches
             }
         }
-
-        splits
     }
+    // Recursive case: did not hit a splitter
+    else {
+        simulate(manifold, splits, loc + DOWN)
+    }
+}
+
+#[derive(PartialEq, Debug, Eq, Hash, Clone)]
+pub enum Direction {
+    Left,
+    Right,
 }

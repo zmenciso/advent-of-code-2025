@@ -1,4 +1,5 @@
 use aoc_07::*;
+use std::collections::HashMap;
 use std::error::Error;
 use std::io;
 
@@ -11,10 +12,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     println!("{manifold}");
-    let splits = manifold.simulate();
 
-    println!("{manifold}");
-    println!("{splits}");
+    let mut splits = HashMap::new();
+    simulate(&manifold, &mut splits, manifold.start);
+
+    if let Some((_, val)) = splits.iter().min_by_key(|(p, _)| p.y) {
+        println!("{}", *val);
+    }
 
     Ok(())
 }
