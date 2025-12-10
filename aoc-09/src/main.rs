@@ -1,9 +1,12 @@
 use aoc_09::*;
+use std::collections::HashSet;
 use std::error::Error;
 use std::io;
 
-fn print_floor(tiles: &Vec<Coord>) {
+fn flood(tiles: &Vec<Coord>) -> HashSet<Coord> {
+    let mut interior = HashSet::new();
 
+    interior
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -11,9 +14,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     for line in io::stdin().lines() {
         let line = line.expect("Could not read line");
-        let p = Coord::from_str(&line)?;
-        tiles.push(p);
+        let curr = Coord::from_str(&line)?;
+        tiles.push(curr);
     }
+
+    println!("{}", tiles.len());
 
     Ok(())
 }
