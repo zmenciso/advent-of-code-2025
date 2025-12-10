@@ -1,11 +1,15 @@
+use derive_more::{Add, AddAssign, Sub, SubAssign};
 use std::cmp::{max, min};
 use std::error::Error;
 use std::fmt;
 
 const DELIM: char = ',';
 pub type Int = isize;
+pub type Segment = (Coord, Coord);
 
-#[derive(Debug, Hash, Eq, PartialEq, Copy, Clone, PartialOrd, Ord)]
+#[derive(
+    Debug, Hash, Eq, PartialEq, Copy, Clone, PartialOrd, Ord, Add, Sub, AddAssign, SubAssign,
+)]
 pub struct Coord {
     pub x: Int,
     pub y: Int,
@@ -34,10 +38,6 @@ impl Coord {
     // Add one because the same x or y coord is treated as unit distance
     pub fn area(&self, other: &Self) -> Int {
         ((self.y - other.y).abs() + 1) * ((self.x - other.x).abs() + 1)
-    }
-
-    pub fn distance(&self, other: &Self) -> Int {
-        (self.x - other.x) * (self.x - other.x) + (self.y - other.y) * (self.y - other.y)
     }
 
     pub fn rectangle(&self, other: &Self) -> [Coord; 4] {
