@@ -1,10 +1,9 @@
 use std::cmp::{max, min};
-use std::collections::HashSet;
 use std::error::Error;
 use std::fmt;
 
 const DELIM: char = ',';
-pub type Int = i32;
+pub type Int = isize;
 
 #[derive(Debug, Hash, Eq, PartialEq, Copy, Clone, PartialOrd, Ord)]
 pub struct Coord {
@@ -19,6 +18,9 @@ impl fmt::Display for Coord {
 }
 
 impl Coord {
+    pub fn new() -> Self {
+        Self { x: 0, y: 0 }
+    }
     pub fn from_str(input: &str) -> Result<Self, Box<dyn Error>> {
         let split = input.splitn(3, DELIM);
         let mut vals = split.map(|s| s.parse::<Int>().unwrap_or(0));
@@ -38,48 +40,15 @@ impl Coord {
         (self.x - other.x) * (self.x - other.x) + (self.y - other.y) * (self.y - other.y)
     }
 
-    pub fn interpolate(&self, other: &Self) -> Vec<Coord> {
-        // Problem is constrained to either vertical or horizontal lines
-        if self.y == other.y {
-            let start_x = min(self.x, other.x) + 1;
-            let end_x = max(self.x, other.x);
-
-            (start_x..end_x).map(|x| Coord { x, y: self.y }).collect()
-        } else {
-            let start_y = min(self.y, other.y) + 1;
-            let end_y = max(self.y, other.y);
-
-            (start_y..end_y)
-                .map(|y| Coord { x: self.x, y: y })
-                .collect()
-        }
-    }
-
-    pub fn rectangle(&self, other: &Self) -> HashSet<Coord> {
-        let mut points: HashSet<Coord> = HashSet::new();
-
+    pub fn rectangle(&self, other: &Self) -> [Coord; 4] {
         let (min_x, max_x) = (min(self.x, other.x), max(self.x, other.x));
         let (min_y, max_y) = (min(self.y, other.y), max(self.y, other.y));
 
-        let corners = [
-            Coord { x: min_x, y: min_y }, // BL (0)
-            Coord { x: max_x, y: min_y }, // BR (1)
-            Coord { x: max_x, y: max_y }, // TR (2)
-            Coord { x: min_x, y: max_y }, // TL (3)
-        ];
-
-        let interp: [(usize, usize); 4] = [(0, 1), (1, 2), (2, 3), (3, 1)];
-
-        for &(i, j) in interp.iter() {
-            let a = &corners[i];
-            let b = &corners[j];
-
-            let v = Self::interpolate(a, b);
-            for p in v {
-                points.insert(p);
-            }
-        }
-
-        points
+        [
+            Coord { x: min_x, y: min_y }, // BL
+            Coord { x: max_x, y: min_y }, // BR
+            Coord { x: min_x, y: max_y }, // TL
+            Coord { x: max_x, y: max_y }, // TR
+        ]
     }
 }
