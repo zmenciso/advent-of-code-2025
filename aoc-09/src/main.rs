@@ -10,7 +10,7 @@ pub fn on_boundary(point: Coord, line: Segment) -> bool {
             && point.y >= line.0.y.min(line.1.y)
     }
     // Horizontal edge: p's y matches, x within l
-    else if line.0.y == line.0.y {
+    else if line.0.y == line.1.y {
         point.y == line.0.y
             && point.x <= line.0.x.max(line.1.x)
             && point.x >= line.0.x.min(line.1.x)
@@ -44,8 +44,51 @@ fn inside_polygon(tiles: &Vec<Coord>, point: Coord) -> bool {
     intersections % 2 != 0
 }
 
-fn valid_rectangle(tiles: &Vec<Coord>, rectangle: &[Coord; 4]) -> bool {
-    rectangle.iter().all(|&p| inside_polygon(tiles, p))
+fn edges_cross(tiles: &Vec<Coord>, rectangle: &[Coord; 5]) -> bool {
+    let edges = [
+        (rectangle[0], rectangle[1]), // Bottom
+        (rectangle[2], rectangle[3]), // Top
+        (rectangle[0], rectangle[2]), // Left
+        (rectangle[1], rectangle[3]), // Right
+    ];
+
+    let n = tiles.len();
+    for i in 0..n {
+        let edge: Segment = (tiles[i], tiles[(i + 1) % n]);
+
+        for e in edges {
+            if segments_cross(edge, e) {
+                return false;
+            }
+        }
+    }
+    true
+}
+
+fn between(v: Int, a: Int, b: Int) -> bool {
+    let (min, max) = (a.min(b), a.max(b));
+    v > min && v < max
+}
+
+fn segments_cross(s1: Segment, s2: Segment) -> bool {
+    let s1_vert = s1.0.x == s1.1.x;
+    let s2_vert = s2.0.x == s2.1.x;
+
+    // Crossing not possible if both vertical/horizontal
+    if s1_vert == s2_vert {
+        return false;
+    }
+
+    let (vert, horiz) = if s1_vert { (s1, s2) } else { (s2, s1) };
+
+    let vx = vert.0.x;
+    let hy = horiz.0.y;
+
+    between(vx, horiz.0.x, horiz.1.x) && between(hy, vert.0.y, vert.1.y)
+}
+
+fn valid_rectangle(tiles: &Vec<Coord>, rectangle: &[Coord; 5]) -> bool {
+    rectangle.iter().all(|&p| inside_polygon(tiles, p)) && edges_cross(tiles, rectangle)
 }
 
 fn largest_rec(tiles: &Vec<Coord>) -> (Coord, Coord, Int) {

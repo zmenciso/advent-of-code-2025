@@ -40,7 +40,7 @@ impl Coord {
         ((self.y - other.y).abs() + 1) * ((self.x - other.x).abs() + 1)
     }
 
-    pub fn rectangle(&self, other: &Self) -> [Coord; 4] {
+    pub fn rectangle(&self, other: &Self) -> [Coord; 5] {
         let (min_x, max_x) = (min(self.x, other.x), max(self.x, other.x));
         let (min_y, max_y) = (min(self.y, other.y), max(self.y, other.y));
 
@@ -49,6 +49,10 @@ impl Coord {
             Coord { x: max_x, y: min_y }, // BR
             Coord { x: min_x, y: max_y }, // TL
             Coord { x: max_x, y: max_y }, // TR
+            Coord {
+                x: (min_x + max_x) / 2,
+                y: (min_y + max_y) / 2,
+            }, // Center
         ]
     }
 }
