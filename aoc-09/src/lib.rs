@@ -3,33 +3,7 @@ use std::fmt;
 
 const DELIM: char = ',';
 
-#[derive(Debug)]
-pub struct Pair {
-    pub a: Coord,
-    pub b: Coord,
-}
-
-impl Pair {
-    pub fn new() -> Pair {
-        Pair {
-            a: Coord { x: 0, y: 0 },
-            b: Coord { x: 0, y: 0 },
-        }
-    }
-
-    pub fn area(&self) -> isize {
-        // Add one because the same coord is treated as unit length
-        ((self.a.x - self.b.x).abs() + 1) * ((self.a.y - self.b.y).abs() + 1)
-    }
-}
-
-impl fmt::Display for Pair {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{} x {}", self.a, self.b)
-    }
-}
-
-#[derive(Debug, Hash, Eq, PartialEq, Copy, Clone)]
+#[derive(Debug, Hash, Eq, PartialEq, Copy, Clone, PartialOrd, Ord)]
 pub struct Coord {
     pub x: isize,
     pub y: isize,
@@ -50,5 +24,13 @@ impl Coord {
             x: vals.next().ok_or("missing x value")?,
             y: vals.next().ok_or("missing y value")?,
         })
+    }
+
+    pub fn distance_squared(&self, other: &Coord) -> isize {
+        (self.x - other.x) * (self.x - other.x) + (self.y - other.y) * (self.y - other.y)
+    }
+
+    pub fn cross_product(&self, a: &Coord, b: &Coord) -> isize {
+        (a.x - self.x) * (b.y - self.y) - (a.y - self.y) * (b.x - self.x)
     }
 }
